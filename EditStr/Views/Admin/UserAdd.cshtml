@@ -1,0 +1,63 @@
+﻿@using Core.DTO
+@model GenericViewModel<UserRoleDto>
+@{
+    ViewData["Title"] = Localizer["Tittle"];
+}
+<nav aria-label="breadcrumb" class="d-flex align-items-center px-3 py-2 bg-light shadow-sm rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-primary">@Localizer["Bread"]</a></li>
+        <li class="breadcrumb-item"><a href="UserAdd/" class="text-decoration-none text-primary">@Localizer["Bread2"]</a></li>
+    </ol>
+    <a href="/Home/Index" class="ms-auto"><img src="~/images/logo.png" alt="EditStr Logo" class="img-fluid" style="width: 100px; object-fit: cover;"></a>
+</nav>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">@Localizer["UserName"]</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">@Localizer["AdminName"]</label>
+                            <input type="text" class="form-control" id="fullName" name="FullName" placeholder="@Localizer["AdminNamePlac"]" required  />
+                        </div>
+                        <div class="mb-3">
+                            <label for="ProfileImage" class="form-label">@Localizer["AdminPhoto"]</label>
+                            <input class="form-control" type="file" id="ProfileImage" name="ProfileImage" accept="image/*" />
+                            <div class="form-text">@Localizer["AdminPhotoPlac"]</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="Email" class="form-label">Email*</label>
+                            <input type="email" class="form-control" id="Email" name="Email" placeholder="@Localizer["AdminEmail"]" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="RoleId" class="form-label">@Localizer["AdminRole"]</label>
+                            <select class="form-control custom-select" name="RoleId" asp-items="Model.ParentList" id="RoleId" required>
+                                <option value="" selected disabled>@Localizer["AdminRolePlac"]</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="Password" class="form-label">@Localizer["AdminPassword"]</label>
+                            <input type="password" class="form-control" id="Password" name="Password" placeholder="@Localizer["AdminPasswordPlac"]" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="PasswordAgain" class="form-label">@Localizer["AdminRepeatPass"]</label>
+                            <input type="password" class="form-control" id="PasswordAgain" name="PasswordAgain" placeholder="@Localizer["AdminRepeatPlac"]" required />
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                @Localizer["Add"]
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    @Localizer["Text"]
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

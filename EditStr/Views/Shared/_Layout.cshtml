@@ -1,0 +1,292 @@
+﻿@using System.Security.Claims;
+@using System.Globalization
+@{
+    var culture = CultureInfo.CurrentUICulture.Name;
+    var isEnglish = culture == "en-US";
+
+    var selectedLangText = isEnglish ? "English" : "Turkish";
+    var selectedFlagUrl = isEnglish
+        ? "https://flagcdn.com/us.svg"
+        : "https://flagcdn.com/tr.svg";
+}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - EditStr</title>
+    <link rel="icon" type="image/x-icon" href="~/images/favicon.png">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/lib/toast-master/css/jquery.toast.css">
+    <link rel="stylesheet" href="~/lib/datatables/dataTables.min.css" type="text/css">
+    <link rel="stylesheet" href="~/lib/sweetalert/sweetalert2.min.css" type="text/css">
+</head>
+<style>
+    .container {
+        flex: 1;
+    }
+
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #000000;
+    }
+
+    [data-bs-theme="dark"] .navbar .nav-link {
+        color: #ffffff !important;
+    }
+
+    #themeIcon {
+        color: var(--text-color) !important;
+        transition: color .3s;
+    }
+
+    [data-bs-theme="dark"] #themeIcon {
+        color: #ffffff !important;
+    }
+
+    [data-bs-theme="dark"] {
+        --bg-color: #121212;
+        --text-color: #e0e0e0;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color .3s, color .3s;
+    }
+
+    .navbar,
+    footer,
+    .bg-white,
+    .bg-light {
+        background-color: var(--bg-color) !important;
+    }
+
+    .lang-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .hover-bg:hover {
+        background-color: #f1f1f1 !important;
+    }
+</style>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0;">
+    <header>
+        <nav class="navbar navbar-expand-lg bg-white shadow-sm rounded-bottom py-3 px-4 mb-4">
+            <a href="/Home/Index"><img src="~/images/logo.png" alt="EditStr Logo" class="img-fluid" style="width: 100px; object-fit: cover;"></a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark fw-medium px-3 rounded-pill hover-bg" href="/Home/Index">@Localizer["NavVideos"]</a>
+                    </li>
+                    @if (Context.User.IsInRole("Admin") || Context.User.IsInRole("Yönetici") || Context.User.IsInRole("Editör") || Context.User.IsInRole("Editor"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-medium px-3 rounded-pill hover-bg" href="/Home/EditAdd">@Localizer["NavVideoAdd"]</a>
+                        </li>
+                    }
+                    @if (Context.User.IsInRole("Admin") || Context.User.IsInRole("Yönetici"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark fw-medium px-3 rounded-pill hover-bg" href="#" role="button" data-bs-toggle="dropdown">@Localizer["NavAdminPanel"]</a>
+                            <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow-sm">
+                                <li><a class="dropdown-item" href="/Admin/RoleAdd">@Localizer["NavRoleAdd"]</a></li>
+                                <li><a class="dropdown-item" href="/Admin/UserAdd">@Localizer["NavUserAdd"]</a></li>
+                                <li><a class="dropdown-item" href="/Admin/UserList">@Localizer["NavUserList"]</a></li>
+                            </ul>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <button id="themeToggle"
+                                class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                style="width: 36px; height: 36px;"
+                                title="Tema Değiştir">
+                            <i class="bi bi-moon-fill" id="themeIcon" style="color: black;"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                            @if (Context.User.FindFirst("Image")?.Value != "")
+                            {
+                                <img id="imagePreview" class="rounded-circle border border-2 border-primary" src="~/Uploads/Users/@Context.User.FindFirst("Image").Value" alt="profil" width="32" height="32" style="object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <img id="imagePreview" class="rounded-circle border border-2 border-secondary" src="~/images/default_user_image.png" alt="profil" width="32" height="32" style="object-fit: cover;" />
+                            }
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow-sm">
+                            <li><a class="dropdown-item" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#profileModal">@Localizer["NavProfile"]</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/Auth/Logout">@Localizer["NavLogOut"]</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-3 py-2 rounded-pill text-dark fw-semibold border border-light-subtle hover-bg bg-white"
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="@selectedFlagUrl" alt="@selectedLangText" width="20" height="15" />
+                            <span>@selectedLangText</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow-lg">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 lang-item"
+                                   href="/Language/SetLanguage?culture=tr-TR&returnUrl=@Context.Request.Path">
+                                    <img src="https://flagcdn.com/tr.svg" alt="Turkish" width="20" height="15" />
+                                    <span>Turkish</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 lang-item"
+                                   href="/Language/SetLanguage?culture=en-US&returnUrl=@Context.Request.Path">
+                                    <img src="https://flagcdn.com/us.svg" alt="English" width="20" height="15" />
+                                    <span>English</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header border-0">
+                    <ul class="nav nav-tabs border-0 fw-semibold" id="profileTab" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active rounded-top" id="edit-profile-tab" data-bs-toggle="tab"
+                                    data-bs-target="#edit-profile" type="button" role="tab" aria-controls="edit-profile"
+                                    aria-selected="true">
+                                @Localizer["NavEditProfile"]
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link rounded-top" id="change-password-tab" data-bs-toggle="tab"
+                                    data-bs-target="#change-password" type="button" role="tab" aria-controls="change-password"
+                                    aria-selected="false">
+                                @Localizer["NavChangePassword"]
+                            </button>
+                        </li>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="tab-content" id="profileTabContent">
+                        <div class="tab-pane fade show active" id="edit-profile" role="tabpanel">
+                            <form id="EditProfile">
+                                <div class="row g-4 align-items-center">
+                                    <div class="col-md-4 text-center">
+                                        <div class="position-relative">
+                                            <img class="rounded-circle border border-3 border-primary shadow-sm imagePreview"
+                                                 src="@(Context.User.FindFirst("Image")?.Value != "" ? Url.Content("~/Uploads/Users/" + Context.User.FindFirst("Image").Value) : Url.Content("~/images/default_user_image.png"))"
+                                                 alt="Profil Resmi" width="150" height="150" style="object-fit:cover;" />
+                                            <label class="btn btn-sm btn-outline-primary mt-3" for="imageFileInput">@Localizer["NavChangePhoto"]</label>
+                                            <input type="file" name="ProfileImage" id="imageFileInput" class="d-none" />
+                                        </div>
+                                        <h5 class="mt-3">@Context.User.FindFirst(ClaimTypes.Name)?.Value / @Context.User.FindFirst(ClaimTypes.Role)?.Value</h5>
+                                        <p class="text-muted small">@Context.User.FindFirst(ClaimTypes.Email)?.Value</p>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">@Localizer["NavNameSurname"]</label>
+                                            <input type="text" class="form-control rounded-3" name="FullName"
+                                                   value="@Context.User.FindFirst(ClaimTypes.Name)?.Value" />
+                                        </div>
+                                        <div id="EditProfileAlert" class="alert d-none mt-2" role="alert"></div>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-4">
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4">@Localizer["NavSave"]</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="change-password" role="tabpanel">
+                            <form id="changePasswordForm" autocomplete="off">
+                                <div class="row g-4 align-items-center">
+                                    <div class="col-md-4 text-center">
+                                        <img class="rounded-circle border border-3 border-secondary shadow-sm imagePreview"
+                                             src="@(Context.User.FindFirst("Image")?.Value != "" ? Url.Content("~/Uploads/Users/" + Context.User.FindFirst("Image").Value) : Url.Content("~/images/default_user_image.png"))"
+                                             alt="Profil Resmi" width="150" height="150" style="object-fit:cover;" />
+                                        <h5 class="mt-3">@Context.User.FindFirst(ClaimTypes.Name)?.Value</h5>
+                                        <p class="text-muted small">@Context.User.FindFirst(ClaimTypes.Email)?.Value</p>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text" name="fakeuser" class="d-none">
+                                        <input type="password" name="fakepass" class="d-none">
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">@Localizer["NavNewPassword"]</label>
+                                            <input type="password" class="form-control rounded-3" name="Password"
+                                                   placeholder="@Localizer["NavPlaceholder"]" required autocomplete="new-password">
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">@Localizer["NavRepeatPassword"]</label>
+                                            <input type="password" class="form-control rounded-3" name="PasswordAgain"
+                                                   placeholder="@Localizer["NavPlaceholderRepeat"]" required autocomplete="new-password-again">
+                                        </div>
+                                        <div id="changePasswordAlert" class="alert d-none mt-2" role="alert"></div>
+                                    </div>
+                                </div>
+                                <div class="text-end mt-4">
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4">@Localizer["NavButPassword"]</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="border-top bg-light text-muted py-3">
+        <div class="container-fluid">
+            <div class="row gy-4">
+                <div class="col-md-4">
+                    <h5 class="text-primary fw-bold mb-3"><a href="/Home/Index"><img src="~/images/logo.png" alt="EditStr Logo" class="img-fluid" style="width: 100px; object-fit: cover;"></a></h5>
+                    <p>@Localizer["FotText"]</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="fw-semibold mb-3">@Localizer["FotContact"]</h5>
+                    <p><i class="bi bi-envelope-fill me-2"></i> afurkanteke0@gmail.com</p>
+                    <p><i class="bi bi-geo-alt-fill me-2"></i> İstanbul, Türkiye</p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="fw-semibold mb-3">@Localizer["FotSocialMedia"]</h5>
+                    <div class="d-flex gap-3 fs-4">
+                        <a href="https://github.com/furkanAteke" class="text-muted hover-primary" target="_blank" aria-label="GitHub"><i class="bi bi-github"></i></a>
+                        <a href="https://www.instagram.com/tkefurknn" class="text-muted hover-primary" target="_blank" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="https://www.linkedin.com/in/furkanteke0" class="text-muted hover-primary" target="_blank" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mb-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small pb-2">
+                <div>&copy; @DateTime.UtcNow.Year.ToString() <strong class="text-primary"><a href="/">EditStr</a></strong>. @Localizer["FotReser"]</div>
+            </div>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/toast-master/js/jquery.toast.js"></script>
+    <script src="~/lib/datatables/dataTables.min.js"></script>
+    <script src="~/lib/sweetalert/sweetalert2.min.js"></script>
+    <script>
+        @if (TempData["Message"] is not null)
+        {
+                        @Html.Raw(TempData["Message"].ToString())
+                    ;
+        }
+    </script>
+</body>
+</html>

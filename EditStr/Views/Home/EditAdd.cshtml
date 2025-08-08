@@ -1,0 +1,59 @@
+﻿@model CategoryEditViewModel
+@{
+    ViewData["Title"] = Localizer["Tittle"];
+}
+<nav aria-label="breadcrumb" class="d-flex align-items-center px-3 py-2 bg-light shadow-sm rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-primary">@Localizer["TittleVideos"]</a></li>
+        <li class="breadcrumb-item"><a href="EditAdd/" class="text-decoration-none text-primary">@Localizer["Tittle"]</a></li>
+    </ol>
+    <a href="/Home/Index" class="ms-auto"><img src="~/images/logo.png" alt="EditStr Logo" class="img-fluid" style="width: 100px; object-fit: cover;"></a>
+</nav>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">@Localizer["VideoAdd"]</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="EditName" class="form-label">@Localizer["VideoName"]</label>
+                            <input type="text" class="form-control" id="EditName" asp-for="Edit.EditName" placeholder="@Localizer["VideoNamePlac"]" required />
+                        </div>
+                        <div class="mb-4">
+                            <label for="EditPath" class="form-label">@Localizer["VideoPath"]</label>
+                            <input class="form-control" type="file" id="EditPath" asp-for="Edit.EditPath" accept="image/*,video/*" required />
+                            <div class="form-text">
+                                @Localizer["VideoPathPlac"]
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="CategoryId" class="form-label">@Localizer["VideoFilter"]</label>
+                            <select class="form-select" id="CategoryId" asp-for="Edit.CategoryId" required>
+                                <option value="" selected disabled>@Localizer["VideoFilterPlac"]</option>
+                                @foreach (var item in Model.Category)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="Description" class="form-label">@Localizer["VideoDescription"]</label>
+                            <textarea class="form-control" id="Description" rows="4" asp-for="Edit.Description" placeholder="@Localizer["VideoDescriptionPlac"]"></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                @Localizer["ButVideo"]
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    @Localizer["TittleDes"]
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,135 @@
+﻿@model RoleViewModel
+@{
+    ViewData["Title"] = Localizer["Tittle"];
+}
+<style>
+    .custom-search-container {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .custom-search {
+        max-width: 300px;
+        border-radius: 20px;
+        padding: 6px 15px;
+    }
+</style>
+<nav aria-label="breadcrumb" class="d-flex align-items-center px-3 py-2 bg-light shadow-sm rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-primary">@Localizer["Bread"]</a></li>
+        <li class="breadcrumb-item"><a href="RoleAdd/" class="text-decoration-none text-primary">@Localizer["Tittle"]</a></li>
+    </ol>
+    <a href="/Home/Index" class="ms-auto"><img src="~/images/logo.png" alt="EditStr Logo" class="img-fluid" style="width: 100px; object-fit: cover;"></a>
+</nav>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">@Localizer["Admin"]</h2>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">
+            <i class="bi bi-plus-lg"></i> @Localizer["Add"]
+        </button>
+    </div>
+    <div class="table-responsive rounded-4 shadow-sm">
+        <table id="dataTable" class="table table-striped table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>@Localizer["AdminName"]</th>
+                    <th class="d-none d-md-table-cell">@Localizer["AdminDes"]</th>
+                    <th class="text-center" style="min-width: 140px;">#</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    foreach (var item in Model.List)
+                    {
+                        <tr>
+                            <td class="text-center">@i</td>
+                            <td>@item.Name</td>
+                            <td class="d-none d-md-table-cell text-muted">@item.Desciprtion</td>
+                            <td class="text-center">
+                                <div class="d-none d-sm-flex justify-content-center gap-2">
+                                    <button data-bs-toggle="modal" data-bs-target="#EditModal" data-id="@item.Id"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-3 edit-role-btn">
+                                        <i class="bi bi-pencil"></i> @Localizer["AdminEdit"]
+                                    </button>
+                                    <button onclick="Delete('/Admin/RoleDelete/', @item.Id)"
+                                            class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                        <i class="bi bi-trash"></i> @Localizer["AdminRemove"]
+                                    </button>
+                                </div>
+                                <div class="d-flex d-sm-none justify-content-center gap-2">
+                                    <button data-bs-toggle="modal" data-bs-target="#EditModal" data-id="@item.Id"
+                                            class="btn btn-sm btn-outline-primary rounded-circle p-2 edit-role-btn" title="Düzenle">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button onclick="Delete('/Admin/RoleDelete/', @item.Id)"
+                                            class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="categoryModalLabel">@Localizer["AdminAdd"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <form method="post" asp-action="RoleAdd" asp-controller="Admin" id="UserRole">
+                <div class="modal-body pt-0 mt-2">
+                    <div class="mb-3">
+                        <label for="Name" class="form-label fw-semibold">@Localizer["RoleName"]</label>
+                        <input type="text" class="form-control form-control-lg rounded-pill" id="Name" name="Name" placeholder="@Localizer["RoleNamePlac"]" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label fw-semibold">@Localizer["RoleDes"]</label>
+                        <textarea class="form-control rounded-3" id="Description" name="Desciprtion" rows="3" placeholder="@Localizer["RoleDesPlac"]"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">@Localizer["RoleClose"]</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">@Localizer["Add"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="categoryModalLabel">@Localizer["RoleEdit"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <form method="post" id="UserRoleEdit" asp-action="RoleEdit" asp-controller="Admin">
+                <div class="modal-body pt-0 mt-2">
+                    <input type="hidden" id="Edit_Id" name="Id" />
+                    <div class="mb-3">
+                        <label for="Edit_Name" class="form-label fw-semibold">@Localizer["RoleName"]</label>
+                        <input type="text" class="form-control form-control-lg rounded-pill" id="Edit_Name" name="Name" placeholder="@Localizer["RoleNamePlac"]" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Edit_Description" class="form-label fw-semibold">@Localizer["RoleDes"]</label>
+                        <textarea class="form-control rounded-3" id="Edit_Desciprtion" name="Desciprtion" rows="3" placeholder="@Localizer["RoleDesPlac"]"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">@Localizer["RoleClose"]</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">@Localizer["Edit"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

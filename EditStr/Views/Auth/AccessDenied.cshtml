@@ -1,0 +1,14 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = Localizer["Page"];
+}
+<div class="container text-center py-5">
+    <div class="display-1 fw-bold text-danger mb-3">404</div>
+    <h2 class="mb-3 fw-semibold">@Localizer["Page"]</h2>
+    <p class="text-muted mb-4">
+        @Localizer["PageText"]
+    </p>
+    <a href="/" class="btn btn-outline-primary rounded-pill px-4 py-2">
+        @Localizer["ButReturn"]
+    </a>
+</div>

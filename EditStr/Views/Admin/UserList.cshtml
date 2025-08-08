@@ -1,0 +1,151 @@
+﻿﻿@using System.Security.Claims;
+@using Core.DTO
+@model GenericViewModel<IReadOnlyList<UserDto>>
+@{
+    ViewData["Title"] = Localizer["Tittle"];
+}
+<style>
+    .custom-search-container {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .custom-search {
+        max-width: 300px;
+        border-radius: 20px;
+        padding: 6px 15px;
+    }
+</style>
+<nav aria-label="breadcrumb" class="d-flex align-items-center px-3 py-2 bg-light shadow-sm rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-primary">@Localizer["Videos"]</a></li>
+        <li class="breadcrumb-item"><a href="RoleAdd/" class="text-decoration-none text-primary">@Localizer["Tittle"]</a></li>
+    </ol>
+    <a href="/Home/Index" class="ms-auto"><img src="~/images/logo.png" alt="EditStr Logo" class="img-fluid" style="width: 100px; object-fit: cover;"></a>
+</nav>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">@Localizer["Admin"]</h2>
+        <a href="/Admin/UserAdd" class="btn btn-success">
+            <i class="bi bi-plus-lg"></i> @Localizer["Add"]
+        </a>
+    </div>
+    <div class="table-responsive rounded-4 shadow-sm">
+        <table id="dataTable" class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width:40px;">#</th>
+                    <th>@Localizer["UserName"]</th>
+                    <th class="text-center" style="width:60px;">@Localizer["UserProfile"]</th>
+                    <th class="d-none d-sm-table-cell">Email</th>
+                    <th class="d-none d-md-table-cell" style="width:100px;">@Localizer["UserRole"]</th>
+                    <th class="text-center" style="min-width: 120px;">#</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    if (Model?.Response != null)
+                    {
+                        foreach (var item in Model.Response)
+                        {
+                            <tr>
+                                <td class="text-center">@i</td>
+                                <td>@item.FullName</td>
+                                <td class="text-center">
+                                    @if (item.Image is not null)
+                                    {
+                                        <img src="~/Uploads/Users/@item.Image" alt="Profil Fotoğrafı" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #dee2e6;" />
+                                    }
+                                    else
+                                    {
+                                        <img src="~/images/default_user_image.png" alt="Profil Fotoğrafı" class="rounded-circle shadow-sm" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #dee2e6;" />
+                                    }
+                                </td>
+                                <td class="d-none d-sm-table-cell">@item.Email</td>
+                                <td class="d-none d-md-table-cell">@item.UserRole.Name</td>
+                                <td class="text-center">
+                                    <div class="d-none d-sm-flex justify-content-center gap-2">
+                                        <button data-bs-toggle="modal" data-bs-target="#UserEditModal" data-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3 Useredit-role-btn">
+                                            <i class="bi bi-pencil"></i> @Localizer["Edit"]
+                                        </button>
+                                        <button onclick="Delete('/Admin/UserDelete/', @item.Id)" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                            <i class="bi bi-trash"></i> @Localizer["Remove"]
+                                        </button>
+                                    </div>
+                                    <div class="d-flex d-sm-none justify-content-center gap-2">
+                                        <button data-bs-toggle="modal" data-bs-target="#UserEditModal" data-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-circle p-2 Useredit-role-btn" title="Düzenle">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button onclick="Delete('/Admin/UserDelete/', @item.Id)" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Sil">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="modal fade" id="UserEditModal" tabindex="-1" aria-labelledby="UserEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="UserEditModalLabel">@Localizer["EditTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <form method="post" asp-action="UserEdit" asp-controller="Admin" id="UserEdit" enctype="multipart/form-data">
+                <div class="modal-body pt-0 mt-2">
+                    <input type="hidden" id="Edit_Id" name="Id" />
+                    <input type="hidden" id="Image" name="Image" />
+                    <div class="mb-3">
+                        <label for="Edit_FullName" class="form-label fw-semibold">@Localizer["EditName"]</label>
+                        <input type="text" class="form-control rounded-3" id="Edit_FullName" name="FullName" placeholder="@Localizer["EditNamePlac"]" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Edit_Image" class="form-label fw-semibold">@Localizer["EditProfilPhoto"]</label>
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="position-relative mb-2" style="width: 120px; height: 120px;">
+                                <img id="ProfileImagePreview" src="#" alt="Profil Fotoğrafı" class="img-thumbnail imagePreview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px; display: none;" />
+                                <button type="button" id="UserImageRemove"
+                                        class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                        title="Resmi sil" style="z-index: 10;">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <input class="form-control rounded-pill" type="file" id="Edit_Image" name="ProfileImage" accept="image/*" />
+                            <div class="form-text">@Localizer["EditPhotoPlac"]</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Edit_Email" class="form-label fw-semibold">Email*</label>
+                        <input type="email" class="form-control rounded-pill" id="Edit_Email" name="Email" readonly />
+                        <div class="form-text">@Localizer["EditEmailPlac"]</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Edit_RoleId" class="form-label fw-semibold">@Localizer["EditRole"]</label>
+                        <select class="form-control rounded-pill" name="RoleId" asp-items="Model.ParentList" id="Edit_RoleId">
+                            <option value="" selected disabled>@Localizer["EditRolePlac"]</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Password" class="form-label fw-semibold">@Localizer["EditPassword"]</label>
+                        <input type="password" class="form-control rounded-pill" id="Password" name="Password" placeholder="@Localizer["EditPasswordPlac"]" />
+                    </div>
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary rounded-pill">
+                            @Localizer["Update"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

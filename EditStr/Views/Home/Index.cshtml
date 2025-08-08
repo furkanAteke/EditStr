@@ -1,0 +1,111 @@
+﻿@using Core.DTO
+@model CategoryEditViewModel
+﻿@using System.Security.Claims;
+@{
+    ViewData["Title"] = Localizer["Tittle"];
+}
+<nav aria-label="breadcrumb" class="d-flex align-items-center px-3 py-2 bg-light shadow-sm rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-primary">@Localizer["Tittle"] /</a></li>
+    </ol>
+    <input type="text" class="form-control ms-auto" id="searchInput" style="max-width: 220px;" placeholder="@Localizer["VideoSearch"]">
+</nav>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="position-sticky" style="top: 80px;">
+                <h5 class="fw-bold mb-3">@Localizer["Filter"]</h5>
+                <div class="list-group" style="max-height: 400px; overflow-y: auto;">
+                    <button class="list-group-item list-group-item-action active" data-type="Hepsi">@Localizer["FilterShow"]</button>
+                    @foreach (var item in Model.Category)
+                    {
+                        <button class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-type="@item.Name" title="@item.Description" type="button">
+                            <span>@item.Name</span>
+                            @if (Context.User.IsInRole("Editör") || Context.User.IsInRole("Editor") || Context.User.IsInRole("Admin") || Context.User.IsInRole("Yönetici"))
+                            {
+                                <span style="cursor:pointer; color: #dc3545; font-weight: 700;" onclick="Delete('/Home/CategoryDelete/', @item.Id)" title="Sil">&times;</span>
+                            }
+                        </button>
+                    }
+                </div>
+                @if (Context.User.IsInRole("Editör") || Context.User.IsInRole("Editor") || Context.User.IsInRole("Admin") || Context.User.IsInRole("Yönetici"))
+                {
+                    <button type="button" class="btn btn-outline-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                        <i class="bi bi-plus-circle me-2"></i> @Localizer["ModalFilter"]
+                    </button>
+                }
+                <p class="mt-4 text-muted fst-italic">@Localizer["Welcome"] <strong>@Context.User.FindFirst(ClaimTypes.Name).Value!!</strong></p>
+                <p class="mt-4 text-muted fst-italic">@Localizer["Total"] <strong>@(Model.Edits?.Count ?? 0)</strong> @Localizer["TotalText"]</p>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                @if (Model.Edits.Any())
+                {
+                    @foreach (var item in Model.Edits)
+                    {
+                        <div class="col" data-category="@item.Category?.Name">
+                            <div class="card h-100 shadow-sm border-0 rounded-4" style="transition: transform 0.2s ease;">
+                                <video class="card-img-top rounded-top" style="height: 280px; object-fit: cover;" controls src="@Url.Content($"~/Uploads/Videos/{item.EditFull?.Replace(" ", "")}")">
+                                    Tarayıcınız video etiketini desteklemiyor.
+                                </video>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title fw-semibold">@item.EditName</h5>
+                                    <p class="card-text text-truncate flex-grow-1" title="@item.Description">@item.Description</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        @if (Context.User.IsInRole("Editör") || Context.User.IsInRole("Editor") || Context.User.IsInRole("Admin") || Context.User.IsInRole("Yönetici"))
+                                        {
+                                            <a href="#" onclick="Delete('/Home/EditDelete/', @item.Id)" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                <i class="bi bi-trash"></i> @Localizer["VideoDelete"]
+                                            </a>
+                                        }
+                                        <small class="text-primary fw-medium">@item.Category?.Name</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <div class="alert alert-info rounded-4" role="alert">
+                            <strong>@Localizer["Info"]</strong> @Localizer["InfoText"] <br />
+                            @if (Context.User.IsInRole("Admin") || Context.User.IsInRole("Yönetici") || Context.User.IsInRole("Editör") || Context.User.IsInRole("Editor"))
+                            {
+                                <a href="/Home/EditAdd" role="button" class="btn btn-primary mt-3">@Localizer["InfoVideoAdd"]</a>
+                            }
+                        </div>
+                    </div>
+                }
+                <div id="alertArea"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="categoryModalLabel">@Localizer["ModalFilter"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <form method="post" asp-action="CategoryAdd" asp-controller="Home" id="Category">
+                <div class="modal-body pt-0">
+                    <div class="mb-3">
+                        <label for="Name" class="form-label fw-semibold">@Localizer["ModalFilterName"]</label>
+                        <input type="text" class="form-control form-control-lg rounded-pill" id="Name" name="Name" placeholder="@Localizer["ModalFilterName"]" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label fw-semibold">@Localizer["ModalFilterDescription"]</label>
+                        <textarea class="form-control rounded-3" id="Description" name="Description" rows="3" placeholder="@Localizer["ModalFilterDescription"]"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">@Localizer["ModalFilterClose"]</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">@Localizer["ModalFilterAdd"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
